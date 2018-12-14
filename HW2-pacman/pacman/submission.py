@@ -1,6 +1,7 @@
 import random, util
 from game import Agent
 
+
 #     ********* Reflex agent- sections a and b *********
 class ReflexAgent(Agent):
   """
@@ -47,7 +48,16 @@ def scoreEvaluationFunction(gameState):
     This default evaluation function just returns the score of the state.
     The score is the same one displayed in the Pacman GUI.
   """
-  return gameState.getScore()
+  bonus=0
+  if  2>= util.manhattanDistance(gameState.getPacmanPosition(), gameState.getGhostPosition(1)):
+      bonus= -5000
+      if gameState.getGhostState(1).scaredTimer > 4: bonus*= -0.5
+
+  if  2>= util.manhattanDistance(gameState.getPacmanPosition(), gameState.getGhostPosition(2)):
+      bonus= -5000
+      if gameState.getGhostState(2).scaredTimer > 4: bonus*= -0.5
+
+  return gameState.getScore() + bonus
 
 ######################################################################################
 # b: implementing a better heuristic function
@@ -67,7 +77,7 @@ def betterEvaluationFunction(gameState):
   gameState.getScore():
   The GameState class is defined in pacman.py and you might want to look into that for other helper methods.
   """
-
+  return  gameState.getNumFood()
 #     ********* MultiAgent Search Agents- sections c,d,e,f*********
 
 class MultiAgentSearchAgent(Agent):
