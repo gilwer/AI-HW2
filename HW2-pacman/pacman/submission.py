@@ -38,7 +38,7 @@ class ReflexAgent(Agent):
     and returns a number, where higher numbers are better.
     """
     successorGameState = currentGameState.generatePacmanSuccessor(action)
-    return scoreEvaluationFunction(successorGameState)
+    return betterEvaluationFunction(successorGameState)
 
 
 #     ********* Evaluation functions *********
@@ -48,16 +48,7 @@ def scoreEvaluationFunction(gameState):
     This default evaluation function just returns the score of the state.
     The score is the same one displayed in the Pacman GUI.
   """
-  bonus=0
-  if  2>= util.manhattanDistance(gameState.getPacmanPosition(), gameState.getGhostPosition(1)):
-      bonus= -5000
-      if gameState.getGhostState(1).scaredTimer > 4: bonus*= -0.5
-
-  if  2>= util.manhattanDistance(gameState.getPacmanPosition(), gameState.getGhostPosition(2)):
-      bonus= -5000
-      if gameState.getGhostState(2).scaredTimer > 4: bonus*= -0.5
-
-  return gameState.getScore() + bonus
+  return gameState.getScore()
 
 ######################################################################################
 # b: implementing a better heuristic function
@@ -77,7 +68,16 @@ def betterEvaluationFunction(gameState):
   gameState.getScore():
   The GameState class is defined in pacman.py and you might want to look into that for other helper methods.
   """
-  return  gameState.getNumFood()
+  def bonusCalc(state):
+    bonus = 0
+    if 2>= util.manhattanDistance(state.getPosition(),gameState.getPacmanPosition()):
+      bonus = -5000
+      if state.scaredTimer > 3:
+        bonus *= -0.5
+    return bonus
+  bonusList = list(map(bonusCalc,gameState.getGhostStates()))
+  finalBonus = min(bonusList) if min(bonusList) < 0 else max(bonusList)
+  return  gameState.getScore() + finalBonus
 #     ********* MultiAgent Search Agents- sections c,d,e,f*********
 
 class MultiAgentSearchAgent(Agent):
