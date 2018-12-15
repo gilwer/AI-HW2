@@ -120,13 +120,14 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return (self.evaluationFunction(gameState),0)
         actions = gameState.getLegalActions(agent)
         nextAgent = agent + 1
+        currentActions = []
         if agent == gameState.getNumAgents() - 1:
             nextAgent = 0
             depth = depth + 1
         if agent == 0:
             curMax = (-math.inf,0)
             for action in actions:
-                temp = self.minMax(gameState.generateSuccessor(agent, action), nextAgent, depth)
+                temp=(self.minMax(gameState.generateSuccessor(agent, action), nextAgent, depth))
                 curMax =(temp[0],action) if temp[0]>curMax[0] else curMax
             return curMax
         else:
