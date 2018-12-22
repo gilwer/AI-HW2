@@ -69,17 +69,36 @@ def betterEvaluationFunction(gameState):
     The GameState class is defined in pacman.py and you might want to look into that for other helper methods.
     """
 
+    food_bonus = 0
+    current_food = gameState.getFood()
+    for h in range(gameState.getFood().height):
+        for w in range(gameState.getFood().width):
+            if current_food[w][h] == True: food_bonus += (
+                        1 / util.manhattanDistance((w, h), gameState.getPacmanPosition()))
+
     def bonusCalc(state):
-        bonus = 0
-        if 2 >= util.manhattanDistance(state.getPosition(), gameState.getPacmanPosition()):
-            bonus = -5000
-            if state.scaredTimer > 3:
-                bonus *= -0.5
-        return bonus
+        if state.scaredTimer > 3:
+            return 15/util.manhattanDistance(state.getPosition(), gameState.getPacmanPosition())
+        return 0
+
+    def minDistList(grid,pos):
+        minDist = math.inf
+        for food in grid:
+            minDist = min(minDist,util.manhattanDistance(food,pos))
+        return minDist
+
+    def minDistGrid(grid,pos):
+        minDist = math.inf
+        for w in range(grid.width):
+            for h in range(grid.height):
+                if grid[w][h]:
+                    minDist = min(minDist,util.manhattanDistance((w,h),pos))
+        return minDist
 
     bonusList = list(map(bonusCalc, gameState.getGhostStates()))
     finalBonus = min(bonusList) if min(bonusList) < 0 else max(bonusList)
-    return gameState.getScore() + finalBonus
+    return gameState.getScore() + food_bonus + sum(bonusList)+ 1/min(minDistGrid(gameState.getFood(),gameState.getPacmanPosition()),minDistList(gameState.getCapsules(), gameState.getPacmanPosition()))
+
 
 
 #     ********* MultiAgent Search Agents- sections c,d,e,f*********
@@ -120,16 +139,20 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return (self.evaluationFunction(gameState),0)
         actions = gameState.getLegalActions(agent)
         nextAgent = agent + 1
-        currentActions = []
         if agent == gameState.getNumAgents() - 1:
             nextAgent = 0
             depth = depth + 1
         if agent == 0:
             curMax = (-math.inf,0)
+            currentActions = [curMax]
             for action in actions:
-                temp=(self.minMax(gameState.generateSuccessor(agent, action), nextAgent, depth))
-                curMax =(temp[0],action) if temp[0]>curMax[0] else curMax
-            return curMax
+                temp = self.minMax(gameState.generateSuccessor(agent, action), nextAgent, depth)
+                if temp[0] == curMax[0]:
+                    currentActions.append((temp[0],action))
+                elif temp[0]>curMax[0]:
+                    curMax = (temp[0], action)
+                    currentActions = [curMax]
+            return random.choice(currentActions)
         else:
             curMin = (math.inf,0)
             for action in actions:
