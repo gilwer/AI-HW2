@@ -208,13 +208,51 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
       Your minimax agent with alpha-beta pruning
     """
 
+    def alpha_beta(self, gameState, agent, depth, alpha, beta):
+        if gameState.isLose() or gameState.isWin() or len(gameState.getLegalActions()) == 0:
+            return (gameState.getScore(), 0)
+        if depth == self.depth:
+            return (self.evaluationFunction(gameState), 0)
+        actions = gameState.getLegalActions(agent)
+        nextAgent = agent + 1
+        if agent == gameState.getNumAgents() - 1:
+            nextAgent = 0
+            depth = depth + 1
+        if agent == 0:
+            curMax = (-math.inf, 0)
+            currentActions = [curMax]
+            for action in actions:
+                temp = self.alpha_beta(gameState.generateSuccessor(agent, action), nextAgent, depth,alpha,beta)
+                if temp[0] == curMax[0]:
+                    currentActions.append((temp[0], action))
+                elif temp[0] > curMax[0]:
+                    curMax = (temp[0], action)
+                    currentActions = [curMax]
+                alpha = max(alpha, curMax[0])
+                if curMax[0] >= beta:
+                    return math.inf, 0
+            return random.choice(currentActions)
+        else:
+            curMin = (math.inf, 0)
+            for action in actions:
+                temp = self.alpha_beta(gameState.generateSuccessor(agent, action), nextAgent, depth, alpha ,beta)
+                curMin = (temp[0], action) if temp[0] < curMin[0] else curMin
+                beta = min(curMin[0],beta)
+                if curMin[0] <= alpha:
+                    return -math.inf, 0
+            return curMin
+
+
+
+
+
     def getAction(self, gameState):
         """
           Returns the minimax action using self.depth and self.evaluationFunction
         """
 
         # BEGIN_YOUR_CODE
-        raise Exception("Not implemented yet")
+        return self.alpha_beta(gameState, 0, 0, -math.inf, math.inf)[1]
         # END_YOUR_CODE
 
 
