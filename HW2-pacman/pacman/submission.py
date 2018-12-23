@@ -1,6 +1,6 @@
 import random, util, math
 from game import Agent
-
+from game import Actions
 
 #     ********* Reflex agent- sections a and b *********
 class ReflexAgent(Agent):
@@ -55,6 +55,8 @@ def scoreEvaluationFunction(gameState):
 def betterEvaluationFunction(gameState):
     """
 
+
+
     The betterEvaluationFunction takes in a GameState (pacman.py) and should return a number, where higher numbers are better.
 
     A GameState specifies the full game state, including the food, capsules, agent configurations and more.
@@ -69,6 +71,33 @@ def betterEvaluationFunction(gameState):
     The GameState class is defined in pacman.py and you might want to look into that for other helper methods.
     """
 
+    def test_h():
+        scared_list = min(list(map(bonusCalc2, gameState.getGhostStates())))
+        capsule_location = minDistList(gameState.getCapsules(), gameState.getPacmanPosition())
+        food_location = minDistGrid(gameState.getFood(), gameState.getPacmanPosition())
+        if scared_list < 100:
+            #print("ghost" + str(scared_list))
+            avoid_capsule = capsule_location if capsule_location < 3 else 0
+            return 300/math.sqrt(scared_list) + avoid_capsule*10
+
+        elif capsule_location < 100:
+            #print("capsule")
+            return 15/math.sqrt(capsule_location)
+        else:
+            #print("food")
+            return 10/math.sqrt(food_location)
+
+    def bonusCalc2(state):
+        if state.scaredTimer > 3:
+            return util.manhattanDistance(state.getPosition(), gameState.getPacmanPosition())
+        return float('inf')
+
+
+
+
+
+
+
     food_bonus = 0
     current_food = gameState.getFood()
     for h in range(gameState.getFood().height):
@@ -82,13 +111,13 @@ def betterEvaluationFunction(gameState):
         return 0
 
     def minDistList(grid,pos):
-        minDist = math.inf
+        minDist = float('inf')
         for food in grid:
             minDist = min(minDist,util.manhattanDistance(food,pos))
         return minDist
 
     def minDistGrid(grid,pos):
-        minDist = math.inf
+        minDist = float('inf')
         for w in range(grid.width):
             for h in range(grid.height):
                 if grid[w][h]:
@@ -98,10 +127,16 @@ def betterEvaluationFunction(gameState):
     bonusList = list(map(bonusCalc, gameState.getGhostStates()))
     finalBonus = min(bonusList) if min(bonusList) < 0 else max(bonusList)
     return gameState.getScore() + food_bonus + sum(bonusList)+ 1/min(minDistGrid(gameState.getFood(),gameState.getPacmanPosition()),minDistList(gameState.getCapsules(), gameState.getPacmanPosition()))
+    #return gameState.getScore() + test_h()
 
 
 
-#     ********* MultiAgent Search Agents- sections c,d,e,f*********
+
+
+
+
+
+#  ********* MultiAgent Search Agents- sections c,d,e,f*********
 
 class MultiAgentSearchAgent(Agent):
     """
@@ -143,7 +178,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             nextAgent = 0
             depth = depth + 1
         if agent == 0:
-            curMax = (-math.inf,0)
+            curMax = (-float('inf'),0)
             currentActions = [curMax]
             for action in actions:
                 temp = self.minMax(gameState.generateSuccessor(agent, action), nextAgent, depth)
@@ -154,7 +189,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
                     currentActions = [curMax]
             return random.choice(currentActions)
         else:
-            curMin = (math.inf,0)
+            curMin = (float('inf'),0)
             for action in actions:
                 temp = self.minMax(gameState.generateSuccessor(agent, action), nextAgent, depth)
                 curMin = (temp[0],action) if temp[0]<curMin[0] else curMin
@@ -219,7 +254,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             nextAgent = 0
             depth = depth + 1
         if agent == 0:
-            curMax = (-math.inf, 0)
+            curMax = (-float('inf'), 0)
             currentActions = [curMax]
             for action in actions:
                 temp = self.alpha_beta(gameState.generateSuccessor(agent, action), nextAgent, depth,alpha,beta)
@@ -230,16 +265,16 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                     currentActions = [curMax]
                 alpha = max(alpha, curMax[0])
                 if curMax[0] >= beta:
-                    return math.inf, 0
+                    return float('inf'), 0
             return random.choice(currentActions)
         else:
-            curMin = (math.inf, 0)
+            curMin = (float('inf'), 0)
             for action in actions:
                 temp = self.alpha_beta(gameState.generateSuccessor(agent, action), nextAgent, depth, alpha ,beta)
                 curMin = (temp[0], action) if temp[0] < curMin[0] else curMin
                 beta = min(curMin[0],beta)
                 if curMin[0] <= alpha:
-                    return -math.inf, 0
+                    return -float('inf'), 0
             return curMin
 
 
@@ -252,7 +287,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
 
         # BEGIN_YOUR_CODE
-        return self.alpha_beta(gameState, 0, 0, -math.inf, math.inf)[1]
+        return self.alpha_beta(gameState, 0, 0, -float('inf'), float('inf'))[1]
         # END_YOUR_CODE
 
 
@@ -264,6 +299,33 @@ class RandomExpectimaxAgent(MultiAgentSearchAgent):
       Your expectimax agent
     """
 
+    def expectimax(self, gameState, agent, depth):
+        if gameState.isLose() or gameState.isWin() or len(gameState.getLegalActions()) == 0:
+            return (gameState.getScore(), 0)
+        if depth == self.depth:
+            return (self.evaluationFunction(gameState), 0)
+        actions = gameState.getLegalActions(agent)
+        nextAgent = agent + 1
+        if agent == gameState.getNumAgents() - 1:
+            nextAgent = 0
+            depth = depth + 1
+        if agent == 0:
+            curMax = (-float('inf'), 0)
+            currentActions = [curMax]
+            for action in actions:
+                temp = self.expectimax(gameState.generateSuccessor(agent, action), nextAgent, depth)
+                if temp[0] == curMax[0]:
+                    currentActions.append((temp[0], action))
+                elif temp[0] > curMax[0]:
+                    curMax = (temp[0], action)
+                    currentActions = [curMax]
+            return random.choice(currentActions)
+        else:
+            legalActions = []
+            for action in actions:
+                legalActions.append(self.expectimax(gameState.generateSuccessor(agent, action), nextAgent, depth))
+            return random.choice(legalActions)
+
     def getAction(self, gameState):
         """
           Returns the expectimax action using self.depth and self.evaluationFunction
@@ -271,7 +333,7 @@ class RandomExpectimaxAgent(MultiAgentSearchAgent):
         """
 
         # BEGIN_YOUR_CODE
-        raise Exception("Not implemented yet")
+        return self.expectimax(gameState, 0, 0)[1]
         # END_YOUR_CODE
 
 
@@ -282,6 +344,57 @@ class DirectionalExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent
     """
+    def direcional_expectimax(self, gameState, agent, depth):
+        if gameState.isLose() or gameState.isWin() or len(gameState.getLegalActions()) == 0:
+            return (gameState.getScore(), 0)
+        if depth == self.depth:
+            return (self.evaluationFunction(gameState), 0)
+        actions = gameState.getLegalActions(agent)
+        nextAgent = agent + 1
+        if agent == gameState.getNumAgents() - 1:
+            nextAgent = 0
+            depth = depth + 1
+        if agent == 0:
+            curMax = (-float('inf'), 0)
+            currentActions = [curMax]
+            for action in actions:
+                temp = self.direcional_expectimax(gameState.generateSuccessor(agent, action), nextAgent, depth)
+                if temp[0] == curMax[0]:
+                    currentActions.append((temp[0], action))
+                elif temp[0] > curMax[0]:
+                    curMax = (temp[0], action)
+                    currentActions = [curMax]
+            return random.choice(currentActions)
+        else:
+            ghostState = gameState.getGhostState(agent)
+            isScared = ghostState.scaredTimer > 0
+            pacmanPosition = gameState.getPacmanPosition()
+            pos = gameState.getGhostPosition(agent)
+            speed = 1
+            if isScared: speed = 0.5
+
+            actionVectors = [Actions.directionToVector(a, speed) for a in actions]
+            newPositions = [(pos[0] + a[0], pos[1] + a[1]) for a in actionVectors]
+            distancesToPacman = [util.manhattanDistance(pos, pacmanPosition) for pos in newPositions]
+            if isScared:
+                bestScore = max(distancesToPacman)
+                bestProb = 0.8
+            else:
+                bestScore = min(distancesToPacman)
+                bestProb = 0.8
+            succ_actions = []
+            for action in actions:
+                succ_actions.append(self.direcional_expectimax(gameState.generateSuccessor(agent, action), nextAgent, depth))
+            bestActions = [action for action, distance in zip(succ_actions, distancesToPacman) if distance == bestScore]
+            # Construct distribution
+            dist = util.Counter()
+            for a in bestActions: dist[a] = bestProb / len(bestActions)
+            for a in succ_actions: dist[a] += (1 - bestProb) / len(succ_actions)
+
+            dist.normalize()
+            print("pacmen"+str(agent))
+            print(dist)
+            return util.chooseFromDistribution(dist)
 
     def getAction(self, gameState):
         """
@@ -290,7 +403,7 @@ class DirectionalExpectimaxAgent(MultiAgentSearchAgent):
         """
 
         # BEGIN_YOUR_CODE
-        raise Exception("Not implemented yet")
+        return self.direcional_expectimax(gameState, 0, 0)[1]
         # END_YOUR_CODE
 
 
@@ -311,3 +424,4 @@ class CompetitionAgent(MultiAgentSearchAgent):
         # BEGIN_YOUR_CODE
         raise Exception("Not implemented yet")
         # END_YOUR_CODE
+
