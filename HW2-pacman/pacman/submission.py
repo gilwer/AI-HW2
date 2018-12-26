@@ -1,4 +1,4 @@
-import random, util, math
+import random, util, math, timeit
 from game import Agent
 from game import Actions
 
@@ -12,6 +12,7 @@ class ReflexAgent(Agent):
     def __init__(self):
         self.lastPositions = []
         self.dc = None
+        self.turn_time = []
 
     def getAction(self, gameState):
         """
@@ -21,6 +22,7 @@ class ReflexAgent(Agent):
         ------------------------------------------------------------------------------
         """
         # Collect legal moves and successor states
+        start = timeit.default_timer()
         legalMoves = gameState.getLegalActions()
 
         # Choose one of the best actions
@@ -29,7 +31,10 @@ class ReflexAgent(Agent):
         bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
         chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
 
-        return legalMoves[chosenIndex]
+        result = legalMoves[chosenIndex]
+        stop = timeit.default_timer()
+        self.turn_time.append(stop-start)
+        return result
 
     def evaluationFunction(self, currentGameState, action):
         """
@@ -157,6 +162,7 @@ class MultiAgentSearchAgent(Agent):
         self.index = 0  # Pacman is always agent index 0
         self.evaluationFunction = util.lookup(evalFn, globals())
         self.depth = int(depth)
+        self.turn_time = []
 
 
 ######################################################################################
@@ -231,7 +237,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
 
         # BEGIN_YOUR_CODE
-        return self.minMax(gameState,0,0)[1]
+        start = timeit.default_timer()
+        result = self.minMax(gameState,0,0)[1]
+        stop = timeit.default_timer()
+        self.turn_time.append(stop-start)
+        return result
         # END_YOUR_CODE
 
 
@@ -287,7 +297,11 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
 
         # BEGIN_YOUR_CODE
-        return self.alpha_beta(gameState, 0, 0, -float('inf'), float('inf'))[1]
+        start = timeit.default_timer()
+        result = self.alpha_beta(gameState, 0, 0, -float('inf'), float('inf'))[1]
+        stop = timeit.default_timer()
+        self.turn_time.append(stop - start)
+        return result
         # END_YOUR_CODE
 
 
@@ -332,8 +346,11 @@ class RandomExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their legal moves.
         """
 
-        # BEGIN_YOUR_CODE
-        return self.expectimax(gameState, 0, 0)[1]
+        start = timeit.default_timer()
+        result = self.expectimax(gameState, 0, 0)[1]
+        stop = timeit.default_timer()
+        self.turn_time.append(stop - start)
+        return result
         # END_YOUR_CODE
 
 
@@ -403,7 +420,11 @@ class DirectionalExpectimaxAgent(MultiAgentSearchAgent):
         """
 
         # BEGIN_YOUR_CODE
-        return self.direcional_expectimax(gameState, 0, 0)[1]
+        start = timeit.default_timer()
+        result = self.direcional_expectimax(gameState, 0, 0)[1]
+        stop = timeit.default_timer()
+        self.turn_time.append(stop - start)
+        return result
         # END_YOUR_CODE
 
 

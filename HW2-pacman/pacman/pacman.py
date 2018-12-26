@@ -266,7 +266,7 @@ class ClassicGameRules:
     if state.isLose(): self.lose(state, game)
 
   def win( self, state, game ):
-    if not self.quiet: print("Pacman emerges victorious! Score: %d" % state.data.score)
+    if not self.quiet: print("Pacman emerges victorious! Score: %d" % state.data.score )
     game.gameOver = True
 
   def lose( self, state, game ):
@@ -636,6 +636,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
       f.close()
 
   if (numGames-numTraining) > 0:
+    avg_time = [sum(game.agents[0].turn_time)/float(len(pacman.turn_time)) for game in games]
     scores = [game.state.getScore() for game in games]
     wins = [game.state.isWin() for game in games]
     winRate = wins.count(True)/ float(len(wins))
@@ -643,8 +644,14 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
     print('Scores:       ', ', '.join([str(score) for score in scores]))
     print('Win Rate:      %d/%d (%.2f)' % (wins.count(True), len(wins), winRate))
     print('Record:       ', ', '.join([ ['Loss', 'Win'][int(w)] for w in wins]))
-
+    print('average turn time:', sum(avg_time)/float(len(avg_time)))
   return games
+
+
+def main():
+  args = readCommand( sys.argv[1:] ) # Get game components based on input
+  runGames( **args )
+
 
 if __name__ == '__main__':
   """
@@ -657,8 +664,9 @@ if __name__ == '__main__':
 
   > python pacman.py --help
   """
-  args = readCommand( sys.argv[1:] ) # Get game components based on input
-  runGames( **args )
+  main()
+
+
 
   # import cProfile
   # cProfile.run("runGames( **args )")
