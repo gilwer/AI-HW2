@@ -42,7 +42,7 @@ class ReflexAgent(Agent):
         and returns a number, where higher numbers are better.
         """
         successorGameState = currentGameState.generatePacmanSuccessor(action)
-        return betterEvaluationFunction(successorGameState)
+        return scoreEvaluationFunction(successorGameState)
 
 
 #     ********* Evaluation functions *********
@@ -59,8 +59,6 @@ def scoreEvaluationFunction(gameState):
 # b: implementing a better heuristic function
 def betterEvaluationFunction(gameState):
     """
-
-
 
     The betterEvaluationFunction takes in a GameState (pacman.py) and should return a number, where higher numbers are better.
 
@@ -445,4 +443,3 @@ class CompetitionAgent(MultiAgentSearchAgent):
         # BEGIN_YOUR_CODE
         raise Exception("Not implemented yet")
         # END_YOUR_CODE
-

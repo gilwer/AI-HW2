@@ -9,31 +9,32 @@ if __name__ == '__main__':
     """
        test OBJ
        """
-    pacman_p = 'ReflexAgent'
-    depth_p = '2'
-    layouts = ['minimaxClassic', 'trappedClassic', 'testClassic', 'smallClassic',
-               'originalClassic', 'openClassic',  'mediumClassic',
-               'contestClassic', 'trickyClassic', 'capsuleClassic']
-    depths = ['2']
+    pacman_p = ['RandomExpectimaxAgent', 'DirectionalExpectimaxAgent']
+    depth_p = '4'
 
-
+    layouts = ['trickyClassic']
+    depths = ['4']
+    ghosts = ['DirectionalGhost','RandomGhost']
+    layout = 'trickyClassic'
     std_out = sys.stdout
-    fieldnames = ['Agent', 'layout', 'depth', 'average score', 'average turn time']
-    with open('ReflexAgent_A.csv', mode='w', newline='') as csv_file:
+    fieldnames = ['Agent', 'layout', 'ghost', 'average score', 'average turn time']
+    with open('ghost.csv', mode='w', newline='') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
 
-    for layout in layouts:
-        for depth in depths:
+    for pacman_i in pacman_p:
+        for ghost in ghosts:
             sys.argv.append('-p')
-            sys.argv.append(pacman_p)
+            sys.argv.append(pacman_i)
             sys.argv.append('-q')
             sys.argv.append('-k')
-            sys.argv.append(depth)
+            sys.argv.append(depth_p)
             sys.argv.append('-l')
             sys.argv.append(layout)
             sys.argv.append('-n')
-            sys.argv.append('7')
+            sys.argv.append('2')
+            sys.argv.append('-g')
+            sys.argv.append(ghost)
 
             print(sys.argv)
             stream = StringIO()
@@ -45,9 +46,9 @@ if __name__ == '__main__':
             del sys.argv[:9]
             average_score = float(stream.getvalue().split("\n")[8].split(":")[1])
             average_time = float(stream.getvalue().split("\n")[12].split(":")[1])
-            with open('ReflexAgent_A.csv', mode='a', newline='') as f:
+            with open('ghost.csv', mode='a', newline='') as f:
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
-                writer.writerow({'Agent': pacman_p, 'layout': layout, 'depth': depth, 'average score': average_score,
+                writer.writerow({'Agent': pacman_i, 'layout': layout, 'ghost': ghost, 'average score': average_score,
                                  'average turn time': average_time})
             stream.close()
             sys.stdout = std_out
