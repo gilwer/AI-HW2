@@ -42,7 +42,7 @@ if __name__ == '__main__':
             print(sys.argv)
             # args_i = ['run.py', '-p', 'ReflexAgent', '-q']
             pacman.main()
-
+            a = stream.getvalue()
             del sys.argv[:9]
             average_score = float(stream.getvalue().split("\n")[8].split(":")[1])
             average_time = float(stream.getvalue().split("\n")[12].split(":")[1])

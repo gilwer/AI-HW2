@@ -64,7 +64,7 @@ class DirectionalGhost( GhostAgent ):
     for a in bestActions: dist[a] = bestProb / len(bestActions)
     for a in legalActions: dist[a] += ( 1-bestProb ) / len(legalActions)
     dist.normalize()
-    print("ghost"+str(self.index))
-    print(dist)
+    # print("ghost"+str(self.index))
+    # print(dist)
 
     return dist
