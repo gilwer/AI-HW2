@@ -9,16 +9,16 @@ if __name__ == '__main__':
     """
        test OBJ
        """
-    pacman_p = ['RandomExpectimaxAgent', 'DirectionalExpectimaxAgent']
+    pacman_p = ['MinimaxAgent', 'RandomExpectimaxAgent', 'AlphaBetaAgent']
     depth_p = '4'
 
-    layouts = ['trickyClassic']
+    layouts = ['minimaxClassic']
     depths = ['4']
-    ghosts = ['DirectionalGhost','RandomGhost']
-    layout = 'trickyClassic'
+    ghosts = ['RandomGhost']
+    layout = 'trappedClassic'
     std_out = sys.stdout
     fieldnames = ['Agent', 'layout', 'ghost', 'average score', 'average turn time']
-    with open('ghost.csv', mode='w', newline='') as csv_file:
+    with open('miniClassic.csv', mode='w', newline='') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
 
@@ -34,7 +34,7 @@ if __name__ == '__main__':
             sys.argv.append('-g')
             sys.argv.append(ghost)
             sys.argv.append('-n')
-            sys.argv.append('5')
+            sys.argv.append('50')
 
             print(sys.argv)
             stream = StringIO()
@@ -46,7 +46,7 @@ if __name__ == '__main__':
             del sys.argv[:11]
             average_score = float(stream.getvalue().split("\n")[6].split(":")[1])
             average_time = float(stream.getvalue().split("\n")[10].split(":")[1])
-            with open('ghost.csv', mode='a', newline='') as f:
+            with open('miniClassic.csv', mode='a', newline='') as f:
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writerow({'Agent': pacman_i, 'layout': layout, 'ghost': ghost, 'average score': average_score,
                                  'average turn time': average_time})

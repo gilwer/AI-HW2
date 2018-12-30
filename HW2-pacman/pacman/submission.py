@@ -1,6 +1,7 @@
 import random, util, math, timeit
 from game import Agent
 from game import Actions
+from game import Directions
 
 #     ********* Reflex agent- sections a and b *********
 class ReflexAgent(Agent):
@@ -12,7 +13,7 @@ class ReflexAgent(Agent):
     def __init__(self):
         self.lastPositions = []
         self.dc = None
-        self.turn_time = []
+
 
     def getAction(self, gameState):
         """
@@ -31,10 +32,7 @@ class ReflexAgent(Agent):
         bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
         chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
 
-        result = legalMoves[chosenIndex]
-        stop = timeit.default_timer()
-        self.turn_time.append(stop-start)
-        return result
+        return legalMoves[chosenIndex]
 
     def evaluationFunction(self, currentGameState, action):
         """
@@ -42,7 +40,7 @@ class ReflexAgent(Agent):
         and returns a number, where higher numbers are better.
         """
         successorGameState = currentGameState.generatePacmanSuccessor(action)
-        return scoreEvaluationFunction(successorGameState)
+        return betterEvaluationFunction(successorGameState)
 
 
 #     ********* Evaluation functions *********
@@ -74,40 +72,6 @@ def betterEvaluationFunction(gameState):
     The GameState class is defined in pacman.py and you might want to look into that for other helper methods.
     """
 
-    def test_h():
-        scared_list = min(list(map(bonusCalc2, gameState.getGhostStates())))
-        capsule_location = minDistList(gameState.getCapsules(), gameState.getPacmanPosition())
-        food_location = minDistGrid(gameState.getFood(), gameState.getPacmanPosition())
-        if scared_list < 100:
-            #print("ghost" + str(scared_list))
-            avoid_capsule = capsule_location if capsule_location < 3 else 0
-            return 300/math.sqrt(scared_list) + avoid_capsule*10
-
-        elif capsule_location < 100:
-            #print("capsule")
-            return 15/math.sqrt(capsule_location)
-        else:
-            #print("food")
-            return 10/math.sqrt(food_location)
-
-    def bonusCalc2(state):
-        if state.scaredTimer > 3:
-            return util.manhattanDistance(state.getPosition(), gameState.getPacmanPosition())
-        return float('inf')
-
-
-
-
-
-
-
-    food_bonus = 0
-    current_food = gameState.getFood()
-    for h in range(gameState.getFood().height):
-        for w in range(gameState.getFood().width):
-            if current_food[w][h] == True: food_bonus += (
-                        1 / util.manhattanDistance((w, h), gameState.getPacmanPosition()))
-
     def bonusCalc(state):
         if state.scaredTimer > 3:
             return 15/util.manhattanDistance(state.getPosition(), gameState.getPacmanPosition())
@@ -128,9 +92,7 @@ def betterEvaluationFunction(gameState):
         return minDist
 
     bonusList = list(map(bonusCalc, gameState.getGhostStates()))
-    finalBonus = min(bonusList) if min(bonusList) < 0 else max(bonusList)
-    return gameState.getScore() + food_bonus + sum(bonusList)+ 1/min(minDistGrid(gameState.getFood(),gameState.getPacmanPosition()),minDistList(gameState.getCapsules(), gameState.getPacmanPosition()))
-    #return gameState.getScore() + test_h()
+    return gameState.getScore() + sum(bonusList)+ 1/min(minDistGrid(gameState.getFood(),gameState.getPacmanPosition()),minDistList(gameState.getCapsules(), gameState.getPacmanPosition()))
 
 
 
@@ -160,7 +122,6 @@ class MultiAgentSearchAgent(Agent):
         self.index = 0  # Pacman is always agent index 0
         self.evaluationFunction = util.lookup(evalFn, globals())
         self.depth = int(depth)
-        self.turn_time = []
 
 
 ######################################################################################
@@ -188,7 +149,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 temp = self.minMax(gameState.generateSuccessor(agent, action), nextAgent, depth)
                 if temp[0] == curMax[0]:
                     currentActions.append((temp[0],action))
-                elif temp[0]>curMax[0]:
+                elif temp[0] > curMax[0]:
                     curMax = (temp[0], action)
                     currentActions = [curMax]
             return random.choice(currentActions)
@@ -235,11 +196,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
 
         # BEGIN_YOUR_CODE
-        start = timeit.default_timer()
-        result = self.minMax(gameState,0,0)[1]
-        stop = timeit.default_timer()
-        self.turn_time.append(stop-start)
-        return result
+        return self.minMax(gameState,0,0)[1]
         # END_YOUR_CODE
 
 
@@ -295,11 +252,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
 
         # BEGIN_YOUR_CODE
-        start = timeit.default_timer()
-        result = self.alpha_beta(gameState, 0, 0, -float('inf'), float('inf'))[1]
-        stop = timeit.default_timer()
-        self.turn_time.append(stop - start)
-        return result
+        return self.alpha_beta(gameState, 0, 0, -float('inf'), float('inf'))[1]
         # END_YOUR_CODE
 
 
@@ -344,11 +297,7 @@ class RandomExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their legal moves.
         """
 
-        start = timeit.default_timer()
-        result = self.expectimax(gameState, 0, 0)[1]
-        stop = timeit.default_timer()
-        self.turn_time.append(stop - start)
-        return result
+        return self.expectimax(gameState, 0, 0)[1]
         # END_YOUR_CODE
 
 
@@ -407,8 +356,6 @@ class DirectionalExpectimaxAgent(MultiAgentSearchAgent):
             for a in succ_actions: dist[a] += (1 - bestProb) / len(succ_actions)
 
             dist.normalize()
-            print("pacmen"+str(agent))
-            print(dist)
             return util.chooseFromDistribution(dist)
 
     def getAction(self, gameState):
@@ -418,11 +365,7 @@ class DirectionalExpectimaxAgent(MultiAgentSearchAgent):
         """
 
         # BEGIN_YOUR_CODE
-        start = timeit.default_timer()
-        result = self.direcional_expectimax(gameState, 0, 0)[1]
-        stop = timeit.default_timer()
-        self.turn_time.append(stop - start)
-        return result
+        return self.direcional_expectimax(gameState, 0, 0)[1]
         # END_YOUR_CODE
 
 
@@ -433,6 +376,42 @@ class CompetitionAgent(MultiAgentSearchAgent):
     """
       Your competition agent
     """
+    def alpha_beta_c(self, gameState, agent, depth, alpha, beta):
+        if gameState.isLose() or gameState.isWin() or len(gameState.getLegalActions()) == 0:
+            return (gameState.getScore(), 0)
+        if depth == self.depth:
+            return (self.evaluationFunction(gameState), 0)
+        actions = gameState.getLegalActions(agent)
+        nextAgent = agent + 1
+        if agent == gameState.getNumAgents() - 1:
+            nextAgent = 0
+            depth = depth + 1
+        if agent == 0:
+            curMax = (-float('inf'), 0)
+            currentActions = [curMax]
+            for action in actions:
+                temp = self.alpha_beta_c(gameState.generateSuccessor(agent, action), nextAgent, depth,alpha,beta)
+                if temp[1] == Directions.REVERSE[gameState.getPacmanState().getDirection()]:
+                   temp = temp[0]-20, temp[1]
+                if temp[0] == curMax[0]:
+                    currentActions.append((temp[0], action))
+                elif temp[0] > curMax[0]:
+                    curMax = (temp[0], action)
+                    currentActions = [curMax]
+                alpha = max(alpha, curMax[0])
+                if curMax[0] >= beta:
+                    return float('inf'), 0
+            return random.choice(currentActions)
+        else:
+            curMin = (float('inf'), 0)
+            for action in actions:
+                temp = self.alpha_beta_c(gameState.generateSuccessor(agent, action), nextAgent, depth, alpha ,beta)
+                curMin = (temp[0], action) if temp[0] < curMin[0] else curMin
+                beta = min(curMin[0],beta)
+                if curMin[0] <= alpha:
+                    return -float('inf'), 0
+            return curMin
+
 
     def getAction(self, gameState):
         """
@@ -441,5 +420,5 @@ class CompetitionAgent(MultiAgentSearchAgent):
         """
 
         # BEGIN_YOUR_CODE
-        raise Exception("Not implemented yet")
+        return self.alpha_beta_c(gameState, 0, 0, -float('inf'), float('inf'))[1]
         # END_YOUR_CODE
